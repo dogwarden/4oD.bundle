@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>URL</key>
+	<dict>
+		<key>4oD</key>
+		<dict>
+			<key>URLPatterns</key>
+			<array>
+				<string>^http://www.channel4.com/programmes/.+/4od((/?#|/player/)(\d{7}))?</string>
+			</array>
+			<key>TestURLs</key>
+			<array>
+				<string>http://www.channel4.com/programmes/black-books/4od#3110813</string>
+				<string>http://www.channel4.com/programmes/father-ted/4od/player/3404504</string>
+			</array>
+		</dict>
+	</dict>
+</dict>
+</plist>

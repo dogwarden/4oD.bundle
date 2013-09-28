@@ -1,0 +1,78 @@
+HTTP_HEADERS = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:19.0) Gecko/20100101 Firefox/19.0'}
+RE_ID_PATTERN = Regex('[#/](?P<id>\d{7})')
+
+####################################################################################################
+def NormalizeURL(url):
+
+  find_id = RE_ID_PATTERN.search(url)
+
+  if find_id:
+    id = find_id.group('id')
+  else:
+    assetid = HTML.ElementFromURL(url).xpath('//li[@data-assetid]')
+
+    if len(assetid) > 0:
+      id = assetid[0].get('data-assetid')
+
+  url = url.rsplit('/4od', 1)[0]
+  url = '%s/4od/player/%s' % (url, id)
+
+  return url
+
+####################################################################################################
+def MetadataObjectForURL(url):
+
+  (url, id) = url.rsplit('/player/', 1)
+  xpath = '//li[@data-assetid="%s"]' % id
+
+  try:
+    ep = HTML.ElementFromURL(url, headers=HTTP_HEADERS).xpath(xpath)[0]
+  except:
+    raise Ex.MediaNotAvailable
+
+  try:
+    broadcast = ep.get('data-txDate')
+    originally_available_at = Datetime.ParseDate(broadcast).date()
+  except:
+    originally_available_at = None
+
+  thumb = ep.get('data-image-url')
+  if thumb.startswith('/'):
+    thumb = 'http://www.channel4.com' + thumb
+
+  show_title = ep.get('data-episodetitle')
+  episode_title = ep.get('data-episodeinfo')
+  summary = String.StripTags(ep.get('data-episodesynopsis'))
+
+  try:
+    season = int(ep.get('data-series-number'))
+  except:
+    season = None
+
+  try:
+    episode = int(ep.get('data-episode-number'))
+  except:
+    episode = None
+
+  return EpisodeObject(
+    show = show_title,
+    title = episode_title,
+    season = season,
+    index = episode,
+    summary = summary,
+    originally_available_at = originally_available_at,
+    thumb = thumb
+  )
+
+####################################################################################################
+def MediaObjectsForURL(url):
+
+  return [
+    MediaObject(
+      parts = [
+        PartObject(
+          key = WebVideoURL('https://4id.channel4.com/login?subContext=NetworkNavSignin&redirectUrl=%s' % url)
+        )
+      ]
+    )
+  ]
