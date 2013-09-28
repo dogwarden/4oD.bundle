@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site site="https://4id\.channel4\.com/"
+	plugin="4odplayer.+swf\?"
+	identifier="com.plexapp.plugins.4oD"
+	agent="Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36"
+	initialState="credentials"
+	version="9.0">
+
+	<crop x="0" y="0" width="0" height="-37" />
+
+	<seekbar type="simple">
+		<start x="1" y="-34" />
+		<end x="-1" y="-34" />
+		<played>
+			<color rgb="3fc0fd" />
+		</played>
+	</seekbar>
+
+	<!-- Check for username/password prefs -->
+	<state name="credentials">
+		<event>
+			<condition>
+				<and>
+					<pref name="email" exists="true" />
+					<pref name="password" exists="true" />
+				</and>
+			</condition>
+			<action>
+				<pause time="1000" />
+				<goto state="login" />
+			</action>
+		</event>
+
+		<event>
+			<condition>
+				<or>
+					<pref name="email" exists="false" />
+					<pref name="password" exists="false" />
+				</or>
+			</condition>
+			<action>
+				<pause time="1000" />
+				<goto state="end" param="Please enter your login credentials in the channel's preferences." />
+			</action>
+		</event>
+	</state>
+
+	<state name="login">
+		<event>
+			<condition>
+				<and>
+					<javascript script="document.getElementById('capture_first_userInformationForm') == null ? 1 : 0" matches="0" />
+				</and>
+			</condition>
+			<action>
+				<run script="document.getElementById('capture_first_signIn_emailAddress').value='${email}';" />
+				<run script="document.getElementById('capture_first_signIn_password').value='${password}';" />
+				<run script="document.getElementById('capture_first_signIn_signInButton').click();" />
+				<pause time="1000" />
+				<goto state="loading" />
+			</action>
+		</event>
+
+		<event>
+			<condition>
+				<and>
+					<javascript script="document.getElementById('capture_first_userInformationForm') == null ? 1 : 0" matches="1" />
+				</and>
+			</condition>
+			<action>
+				<pause time="1000" />
+				<run script="janrainCaptureWidgetOnLoad();" />
+				<goto state="login" />
+			</action>
+		</event>
+	</state>
+
+	<state name="loading">
+		<event>
+			<condition>
+				<javascript script="document.getElementById('catchUpPlayer') == null ? 1 : 0" matches="0" />
+			</condition>
+			<action>
+				<run script="var brandWebSafeTitle=jQuery('meta[name=&quot;brandWebSafeTitle&quot;]').attr('content');document.cookie='C4AccessControlCookie_'+brandWebSafeTitle+'={&quot;allowedToWatch&quot;:18}';" />
+				<run script="jQuery('body').html('&lt;object data=&quot;http://www.channel4.com/static/programmes/asset/flash/swf/'+fourodPlayerFile+'?preSelectAsset='+window.location.pathname.split('/').pop()+'&quot; type=&quot;application/x-shockwave-flash&quot; height=&quot;397&quot; width=&quot;640&quot;&gt;&lt;param value=&quot;#000000&quot; name=&quot;bgcolor&quot;&gt;&lt;/object&gt;');" />
+				<goto state="click-to-play" />
+			</action>
+		</event>
+
+		<event>
+			<condition>
+				<javascript script="document.getElementById('catchUpPlayer') == null ? 1 : 0" matches="1" />
+			</condition>
+			<action>
+				<pause time="1000" />
+				<goto state="loading" />
+			</action>
+		</event>
+	</state>
+
+	<!-- Click to play -->
+	<state name="click-to-play">
+		<event>
+			<condition>
+				<color x="320" y="180" rgb="ffffff" /><!-- Play -->
+			</condition>
+			<action>
+				<click x="320" y="180" />
+				<goto state="playing" />
+			</action>
+		</event>
+
+		<event>
+			<condition>
+				<color x="330" y="222" rgb="0f7fa8" /><!-- Play again (don't use resume) -->
+			</condition>
+			<action>
+				<click x="330" y="222" />
+				<goto state="playing" />
+			</action>
+		</event>
+	</state>
+
+	<!-- Playing -->
+	<state name="playing">
+		<event>
+			<condition>
+				<command name="pause" />
+			</condition>
+			<action>
+				<click x="15" y="-17" />
+				<goto state="paused" />
+			</action>
+		</event>
+	</state>
+
+	<!-- Paused -->
+	<state name="paused">
+		<event>
+			<condition>
+				<command name="play" />
+			</condition>
+			<action>
+				<click x="15" y="-17" />
+				<click x="320" y="-17" /><!-- Click in the middle of the controlar to hide the pause tooltip -->
+				<goto state="playing" />
+			</action>
+		</event>
+	</state>
+</site>
